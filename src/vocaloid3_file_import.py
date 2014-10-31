@@ -72,4 +72,4 @@ if __name__ == "__main__":
     register()
 
     # test call
-    bpy.ops.import_test.some_data('INVOKE_DEFAULT')
+    bpy.ops.import_vocaloid3.vsqx_data('INVOKE_DEFAULT')
