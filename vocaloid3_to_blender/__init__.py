@@ -113,7 +113,7 @@ def read_vocaloid3_data(context, filepath, use_some_setting):
             posTick = note.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}posTick')
             durTick = note.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}durTick')
             phnms = note.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}phnms')
-            print posTick.text, durTick.text,phnms.text
+            print(posTick.text, durTick.text,phnms.text)
 
     bpy.ops.wm.call_menu(name=Vocaloid3ImportMenu.bl_idname)
     # would normally load the data here
