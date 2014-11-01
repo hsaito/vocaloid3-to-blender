@@ -16,6 +16,8 @@ if "bpy" in locals():
         imp.reload(import_vocaloid3)
 
 import bpy
+from array import array
+
 from bpy.props import (StringProperty,
                        FloatProperty,
                        IntProperty,
@@ -31,7 +33,7 @@ from bpy_extras.io_utils import (ImportHelper,
 
 class Vocaloid3ImportMenu(bpy.types.Menu):
     bl_label = "Choose a track to import"
-    bl_idname = "OBJECT_MT_vocaloid3_ipmort"
+    bl_idname = "OBJECT_MT_vocaloid3_import"
 
     def draw(self, context):
         layout = self.layout
@@ -68,11 +70,51 @@ if __name__ == "__main__":
     # The menu can also be called from scripts
     bpy.ops.wm.call_menu(name=Vocaloid3ImportMenu.bl_idname)
 
-def read_some_data(context, filepath, use_some_setting):
+def read_vocaloid3_data(context, filepath, use_some_setting):
     print("running Vocaloid3 Importer...")
-    f = open(filepath, 'r', encoding='utf-8')
-    data = f.read()
-    f.close()
+    
+    try:
+        from lxml import etree
+        print("running with lxml.etree")
+    except ImportError:
+        try:
+            # Python 2.5
+            import xml.etree.cElementTree as etree
+            print("running with cElementTree on Python 2.5+")
+        except ImportError:
+            try:
+                    # Python 2.5
+                    import xml.etree.ElementTree as etree
+                    print("running with ElementTree on Python 2.5+")
+            except ImportError:
+                try:
+                    # normal cElementTree install
+                    import cElementTree as etree
+                    print("running with cElementTree")
+                except ImportError:
+                    try:
+                        # normal ElementTree install
+                        import elementtree.ElementTree as etree
+                        print("running with ElementTree")
+                    except ImportError:
+                        print("Failed to import ElementTree from any known place")
+    
+    import xml.etree.ElementTree as VTree
+    tree = VTree.parse(filepath)
+    root = tree.getroot()
+
+    print('Number of Tracks:',len(root.findall('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}vsTrack')))
+
+    for vsTrack in root.findall('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}vsTrack'):
+        vsTrackNo = vsTrack.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}vsTrackNo')
+        print('Track Number:',vsTrackNo.text)
+        musicalPart = vsTrack.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}musicalPart')
+        for note in musicalPart.findall('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}note'):
+            posTick = note.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}posTick')
+            durTick = note.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}durTick')
+            phnms = note.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}phnms')
+            print posTick.text, durTick.text,phnms.text
+
     bpy.ops.wm.call_menu(name=Vocaloid3ImportMenu.bl_idname)
     # would normally load the data here
     print(data)
@@ -117,7 +159,7 @@ class ImportSomeData(Operator, ImportHelper):
             )
 
     def execute(self, context):
-        return read_some_data(context, self.filepath, self.use_setting)
+        return read_vocaloid3_data(context, self.filepath, self.use_setting)
 
 
 # Only needed if you want to add into a dynamic menu
