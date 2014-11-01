@@ -122,7 +122,7 @@ class ImportSomeData(Operator, ImportHelper):
 
 # Only needed if you want to add into a dynamic menu
 def menu_func_import(self, context):
-    self.layout.operator(ImportSomeData.bl_idname, text="Vocaloid3 Import Operator")
+    self.layout.operator(ImportSomeData.bl_idname, text="Vocaloid3 (.vsqx)")
 
 
 def register():
