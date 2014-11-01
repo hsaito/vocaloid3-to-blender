@@ -1,6 +1,6 @@
 bl_info={
     'category': 'Import-Export',
-    'name': 'Vocaloid3 (vsqx) importer',
+    'name': 'Vocaloid3 (.vsqx) importer',
     'author': 'Hideki Saito',
     'blender': (2, 7, 2),
     'location': 'File > Import-Export',
@@ -117,7 +117,7 @@ def read_vocaloid3_data(context, filepath, use_some_setting):
 
     bpy.ops.wm.call_menu(name=Vocaloid3ImportMenu.bl_idname)
     # would normally load the data here
-    print(data)
+    #print(data)
 
     return {'FINISHED'}
 
