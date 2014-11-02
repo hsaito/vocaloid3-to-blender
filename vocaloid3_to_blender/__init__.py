@@ -70,7 +70,7 @@ if __name__ == "__main__":
     # The menu can also be called from scripts
     bpy.ops.wm.call_menu(name=Vocaloid3ImportMenu.bl_idname)
 
-def read_vocaloid3_data(context, filepath, use_some_setting):
+def read_vocaloid3_data(context, filepath, trackValue):
     print("running Vocaloid3 Importer...")
     
     try:
@@ -103,21 +103,31 @@ def read_vocaloid3_data(context, filepath, use_some_setting):
     tree = VTree.parse(filepath)
     root = tree.getroot()
 
-    print('Number of Tracks:',len(root.findall('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}vsTrack')))
 
-    for vsTrack in root.findall('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}vsTrack'):
-        vsTrackNo = vsTrack.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}vsTrackNo')
-        print('Track Number:',vsTrackNo.text)
-        musicalPart = vsTrack.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}musicalPart')
-        for note in musicalPart.findall('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}note'):
-            posTick = note.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}posTick')
-            durTick = note.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}durTick')
-            phnms = note.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}phnms')
-            print(posTick.text, durTick.text,phnms.text)
+    loadingTrack = root.findall('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}vsTrack')
+    musicalPart = loadingTrack[trackValue].find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}musicalPart')
+    for note in musicalPart.findall('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}note'):
+        posTick = note.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}posTick')
+        durTick = note.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}durTick')
+        phnms = note.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}phnms')
+        print(posTick.text, durTick.text,phnms.text)    
 
-    bpy.ops.wm.call_menu(name=Vocaloid3ImportMenu.bl_idname)
+    #    print('Number of Tracks:',len(root.findall('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}vsTrack')))
+    #
+    #    for vsTrack in root.findall('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}vsTrack'):
+    #        vsTrackNo = vsTrack.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}vsTrackNo')
+    #        print('Track Number:',vsTrackNo.text)
+    #        musicalPart = vsTrack.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}musicalPart')
+    #        for note in musicalPart.findall('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}note'):
+    #            posTick = note.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}posTick')
+    #            durTick = note.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}durTick')
+    #            phnms = note.find('{http://www.yamaha.co.jp/vocaloid/schema/vsq3/}phnms')
+    #            print(posTick.text, durTick.text,phnms.text)
+
+
+    # bpy.ops.wm.call_menu(name=Vocaloid3ImportMenu.bl_idname)
     # would normally load the data here
-    #print(data)
+    # print(data)
 
     return {'FINISHED'}
 
@@ -129,10 +139,11 @@ from bpy.props import StringProperty, BoolProperty, EnumProperty
 from bpy.types import Operator
 
 
-class ImportSomeData(Operator, ImportHelper):
-    """This appears in the tooltip of the operator and in the generated docs"""
+class ImportVocaloid3Data(Operator, ImportHelper):
+    """Import Vocaloid3 data for Lip Sync"""
     bl_idname = "import_vocaloid3.vsqx_data"  # important since its how bpy.ops.import_test.some_data is constructed
     bl_label = "Import Vocaloid3 Data"
+    trackValue = 0
 
     # ImportHelper mixin class uses this
     filename_ext = ".vsqx"
@@ -144,31 +155,20 @@ class ImportSomeData(Operator, ImportHelper):
 
     # List of operator properties, the attributes will be assigned
     # to the class instance from the operator settings before calling.
-    use_setting = BoolProperty(
-            name="Placeholder",
-            description="Placeholder",
-            default=True,
-            )
 
-    type = EnumProperty(
-            name="Import Options",
-            description="Choose between two items",
-            items=(('OPT_A', "Option 1 Placeholder", "Description one"),
-                   ('OPT_B', "Option 2 Placeholder", "Description two")),
-            default='OPT_A',
-            )
-
+    trackValue = IntProperty(name="Track", default=0)
+    
     def execute(self, context):
-        return read_vocaloid3_data(context, self.filepath, self.use_setting)
+        return read_vocaloid3_data(context, self.filepath, self.trackValue)
 
 
 # Only needed if you want to add into a dynamic menu
 def menu_func_import(self, context):
-    self.layout.operator(ImportSomeData.bl_idname, text="Vocaloid3 (.vsqx)")
+    self.layout.operator(ImportVocaloid3Data.bl_idname, text="Vocaloid3 (.vsqx)")
 
 
 def register():
-    bpy.utils.register_class(ImportSomeData)
+    bpy.utils.register_class(ImportVocaloid3Data)
     bpy.types.INFO_MT_file_import.append(menu_func_import)
 
 
